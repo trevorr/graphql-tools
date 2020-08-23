@@ -14,6 +14,8 @@ import {
   GraphQLError,
 } from 'graphql';
 
+import { AsyncExecutionResult } from 'graphql/experimental';
+
 import DataLoader from 'dataloader';
 
 import { Operation, Request, TypeMap, ExecutionResult } from '@graphql-tools/utils';
@@ -131,7 +133,9 @@ export type AsyncExecutor = <
 export type SyncExecutor = <TReturn = Record<string, any>, TArgs = Record<string, any>, TContext = Record<string, any>>(
   params: ExecutionParams<TArgs, TContext>
 ) => ExecutionResult<TReturn>;
-export type Executor = AsyncExecutor | SyncExecutor;
+export type Executor = <TReturn = Record<string, any>, TArgs = Record<string, any>, TContext = Record<string, any>>(
+  params: ExecutionParams<TArgs, TContext>
+) => Promise<ExecutionResult<TReturn>> | ExecutionResult<TReturn> | AsyncIterable<AsyncExecutionResult>;
 export type Subscriber = <TReturn = Record<string, any>, TArgs = Record<string, any>, TContext = Record<string, any>>(
   params: ExecutionParams<TArgs, TContext>
 ) => Promise<AsyncIterator<ExecutionResult<TReturn>> | ExecutionResult<TReturn>>;

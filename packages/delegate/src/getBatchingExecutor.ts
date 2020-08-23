@@ -4,9 +4,9 @@ import isPromise from 'is-promise';
 
 import DataLoader from 'dataloader';
 
-import { ExecutionResult } from '@graphql-tools/utils';
+import { ExecutionResult, isAsyncIterable } from '@graphql-tools/utils';
 
-import { ExecutionParams, Endpoint } from './types';
+import { ExecutionParams, Endpoint, Executor } from './types';
 import { memoize2of3 } from './memoize';
 import { mergeExecutionParams } from './mergeExecutionParams';
 import { splitResult } from './splitResult';
@@ -14,7 +14,7 @@ import { splitResult } from './splitResult';
 export const getBatchingExecutor = memoize2of3(function (
   _context: Record<string, any>,
   endpoint: Endpoint,
-  executor: ({ document, context, variables, info }: ExecutionParams) => ExecutionResult | Promise<ExecutionResult>
+  executor: Executor
 ) {
   const loader = new DataLoader(
     createLoadFn(
@@ -27,7 +27,7 @@ export const getBatchingExecutor = memoize2of3(function (
 });
 
 function createLoadFn(
-  executor: ({ document, context, variables, info }: ExecutionParams) => ExecutionResult | Promise<ExecutionResult>,
+  executor: Executor,
   extensionsReducer: (mergedExtensions: Record<string, any>, executionParams: ExecutionParams) => Record<string, any>
 ) {
   return async (execs: Array<ExecutionParams>): Promise<Array<ExecutionResult>> => {
@@ -53,10 +53,16 @@ function createLoadFn(
       const mergedExecutionParams = mergeExecutionParams(execBatch, extensionsReducer);
       const executionResult = executor(mergedExecutionParams);
 
-      if (isPromise(executionResult)) {
+      if (isAsyncIterable(executionResult)) {
+        throw new Error('batching not yet possible with queries that return an async iterable (defer/stream)');
+        // requires splitting up the async iterable into multiple async iterables by path versus possibly just promises
+        // so requires analyzing which of the results would get an async iterable (ie included defer/stream within the subdocument)
+        // or returning an async iterable even though defer/stream was not actually present, which is probably simpler
+        // but most probably against the spec.
+      } else if (isPromise(executionResult)) {
         containsPromises = true;
       }
-      executionResults.push(executionResult);
+      executionResults.push(executionResult as ExecutionResult);
     });
 
     if (containsPromises) {

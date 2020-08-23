@@ -147,6 +147,8 @@ export function stitchSchemas({
     astNode: schemaDefs.schemaDef,
     extensionASTNodes: schemaDefs.schemaExtensions,
     extensions: null,
+    experimentalDefer: true,
+    experimentalStream: true,
   });
 
   extensions.forEach(extension => {

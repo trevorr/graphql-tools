@@ -1,6 +1,5 @@
 import {
   subscribe,
-  execute,
   validate,
   GraphQLSchema,
   isSchema,
@@ -13,9 +12,11 @@ import {
   GraphQLObjectType,
 } from 'graphql';
 
+import { execute } from 'graphql/experimental';
+
 import isPromise from 'is-promise';
 
-import { mapAsyncIterator, ExecutionResult } from '@graphql-tools/utils';
+import { mapAsyncIterator, ExecutionResult, isAsyncIterable } from '@graphql-tools/utils';
 
 import {
   IDelegateToSchemaOptions,
@@ -25,6 +26,7 @@ import {
   StitchingInfo,
   Endpoint,
   Transform,
+  Executor,
 } from './types';
 
 import { isSubschemaConfig } from './Subschema';
@@ -189,8 +191,16 @@ export function delegateRequest({
       info,
     });
 
-    if (isPromise(executionResult)) {
-      return executionResult.then(originalResult => transformer.transformResult(originalResult));
+    if (isAsyncIterable(executionResult)) {
+      return asyncIterableToResult(executionResult).then(originalResult => {
+        const transformedResult = transformer.transformResult(originalResult);
+        transformedResult['ASYNC_ITERABLE'] = executionResult;
+        return transformedResult;
+      });
+    } else if (isPromise(executionResult)) {
+      return (executionResult as Promise<ExecutionResult>).then(originalResult =>
+        transformer.transformResult(originalResult)
+      );
     }
     return transformer.transformResult(executionResult);
   }
@@ -203,7 +213,7 @@ export function delegateRequest({
     context,
     info,
   }).then((subscriptionResult: AsyncIterableIterator<ExecutionResult> | ExecutionResult) => {
-    if (Symbol.asyncIterator in subscriptionResult) {
+    if (isAsyncIterable(subscriptionResult)) {
       // "subscribe" to the subscription result and map the result through the transforms
       return mapAsyncIterator<ExecutionResult, any>(
         subscriptionResult as AsyncIterableIterator<ExecutionResult>,
@@ -229,15 +239,15 @@ function validateRequest(targetSchema: GraphQLSchema, document: DocumentNode) {
   }
 }
 
-function createDefaultExecutor(schema: GraphQLSchema, rootValue: Record<string, any>) {
-  return ({ document, context, variables, info }: ExecutionParams) =>
+function createDefaultExecutor(schema: GraphQLSchema, rootValue: Record<string, any>): Executor {
+  return (({ document, context, variables, info }: ExecutionParams) =>
     execute({
       schema,
       document,
       contextValue: context,
       variableValues: variables,
       rootValue: rootValue ?? info?.rootValue,
-    });
+    })) as Executor;
 }
 
 function createDefaultSubscriber(schema: GraphQLSchema, rootValue: Record<string, any>) {
@@ -249,4 +259,10 @@ function createDefaultSubscriber(schema: GraphQLSchema, rootValue: Record<string
       variableValues: variables,
       rootValue: rootValue ?? info?.rootValue,
     }) as any;
+}
+
+async function asyncIterableToResult(asyncIterable: AsyncIterable<ExecutionResult>): Promise<any> {
+  const asyncIterator = asyncIterable[Symbol.asyncIterator]();
+  const payload = await asyncIterator.next();
+  return payload.value;
 }
