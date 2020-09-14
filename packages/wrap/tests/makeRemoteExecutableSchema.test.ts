@@ -22,10 +22,7 @@ describe('remote queries', () => {
   let schema: GraphQLSchema;
   beforeAll(async () => {
     const remoteSubschemaConfig = await makeSchemaRemote(propertySchema);
-    schema = makeRemoteExecutableSchema({
-      ...remoteSubschemaConfig,
-      ...remoteSubschemaConfig.endpoint,
-    });
+    schema = makeRemoteExecutableSchema(remoteSubschemaConfig);
   });
 
   test('should work', async () => {
@@ -63,10 +60,7 @@ describe('remote subscriptions', () => {
   let schema: GraphQLSchema;
   beforeAll(async () => {
     const remoteSubschemaConfig = await makeSchemaRemote(subscriptionSchema);
-    schema = makeRemoteExecutableSchema({
-      ...remoteSubschemaConfig,
-      ...remoteSubschemaConfig.endpoint,
-    });
+    schema = makeRemoteExecutableSchema(remoteSubschemaConfig);
   });
 
   test('should work', async () => {

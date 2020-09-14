@@ -26,13 +26,11 @@ describe('batch execution', () => {
 
     const innerSubschemaConfig: SubschemaConfig = {
       schema: innerSchema,
-      endpoint: {
-        batch: true,
-        executor: ((params: ExecutionParams): ExecutionResult => {
-          executions++;
-          return execute(innerSchema, params.document, undefined, params.context, params.variables) as ExecutionResult;
-        }) as SyncExecutor,
-      },
+      batch: true,
+      executor: ((params: ExecutionParams): ExecutionResult => {
+        executions++;
+        return execute(innerSchema, params.document, undefined, params.context, params.variables) as ExecutionResult;
+      }) as SyncExecutor
     }
 
     const outerSchema = makeExecutableSchema({

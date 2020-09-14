@@ -223,10 +223,8 @@ export class UrlLoader implements DocumentLoader<LoadFromUrlOptions> {
     const { executor, subscriber } = await this.getExecutorAndSubscriber(pointer, options);
     return {
       schema: await introspectSchema(executor, undefined, options as IntrospectionOptions),
-      endpoint: {
-        executor,
-        subscriber,
-      },
+      executor,
+      subscriber,
     };
   }
 

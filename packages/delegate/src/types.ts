@@ -159,11 +159,14 @@ export interface EndpointBatchingOptions<K = any, V = any, C = K> {
   dataLoaderOptions?: DataLoader.Options<K, V, C>;
 }
 
-export interface SubschemaConfig {
-  schema: GraphQLSchema;
+export interface SubschemaPermutation {
   createProxyingResolver?: CreateProxyingResolverFn;
   transforms?: Array<Transform>;
   merge?: Record<string, MergedTypeConfig>;
+}
+
+export interface SubschemaConfig<K = any, V = any, C = K> extends SubschemaPermutation, Endpoint<K, V, C> {
+  schema: GraphQLSchema;
   endpoint?: Endpoint;
 }
 
