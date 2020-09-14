@@ -106,11 +106,13 @@ describe('graphql upload', () => {
 
     const subschema: SubschemaConfig = {
       schema: nonExecutableSchema,
-      executor: linkToExecutor(
-        createServerHttpLink({
-          uri: `http://localhost:${remotePort.toString()}`,
-        }),
-      ),
+      endpoint: {
+        executor: linkToExecutor(
+          createServerHttpLink({
+            uri: `http://localhost:${remotePort.toString()}`,
+          }),
+        ),
+      },
     };
 
     const gatewaySchema = stitchSchemas({

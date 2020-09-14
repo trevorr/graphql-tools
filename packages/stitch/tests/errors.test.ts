@@ -209,7 +209,9 @@ describe('passes along errors for remote schemas', () => {
     const stitchedSchema = stitchSchemas({
       subschemas: [{
         schema,
-        executor,
+        endpoint: {
+          executor,
+        },
       }]
     });
 

@@ -722,8 +722,10 @@ export async function makeSchemaRemote(
   const clientSchema = await introspectSchema(executor);
   return {
     schema: clientSchema,
-    executor,
-    subscriber,
+    endpoint: {
+      executor,
+      subscriber,
+    },
   };
 }
 

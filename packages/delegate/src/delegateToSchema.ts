@@ -137,11 +137,7 @@ export function delegateRequest({
     }
     targetSchema = subschemaConfig.schema;
     allTransforms = subschemaConfig.transforms != null ? subschemaConfig.transforms.concat(transforms) : transforms;
-    if (subschemaConfig.endpoint != null) {
-      endpoint = subschemaConfig.endpoint;
-    } else {
-      endpoint = subschemaConfig;
-    }
+    endpoint = subschemaConfig.endpoint;
     targetRootValue = rootValue ?? endpoint?.rootValue ?? info?.rootValue;
   } else {
     targetSchema = subschemaOrSubschemaConfig;
@@ -177,8 +173,7 @@ export function delegateRequest({
   }
 
   if (targetOperation === 'query' || targetOperation === 'mutation') {
-    let executor =
-      endpoint?.executor || createDefaultExecutor(targetSchema, subschemaConfig?.rootValue || targetRootValue);
+    let executor = endpoint?.executor || createDefaultExecutor(targetSchema, endpoint?.rootValue || targetRootValue);
 
     if (endpoint?.batch) {
       executor = getBatchingExecutor(context, endpoint, executor);
@@ -197,7 +192,7 @@ export function delegateRequest({
   }
 
   const subscriber =
-    endpoint?.subscriber || createDefaultSubscriber(targetSchema, subschemaConfig?.rootValue || targetRootValue);
+    endpoint?.subscriber || createDefaultSubscriber(targetSchema, endpoint?.rootValue || targetRootValue);
 
   return subscriber({
     ...processedRequest,

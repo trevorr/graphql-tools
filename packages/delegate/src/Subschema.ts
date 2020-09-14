@@ -1,15 +1,6 @@
 import { GraphQLSchema } from 'graphql';
 
-import {
-  SubschemaConfig,
-  Transform,
-  MergedTypeConfig,
-  CreateProxyingResolverFn,
-  Subscriber,
-  Executor,
-  Endpoint,
-  EndpointBatchingOptions,
-} from './types';
+import { SubschemaConfig, Transform, MergedTypeConfig, CreateProxyingResolverFn, Endpoint } from './types';
 
 import { FIELD_SUBSCHEMA_MAP_SYMBOL, OBJECT_SUBSCHEMA_SYMBOL } from './symbols';
 import { applySchemaTransforms } from './applySchemaTransforms';
@@ -61,14 +52,9 @@ export function isSubschema(value: any): value is Subschema {
   return Boolean(value.transformedSchema);
 }
 
-export class Subschema<K = any, V = any, C = K> {
+export class Subschema {
   public schema: GraphQLSchema;
 
-  public rootValue?: Record<string, any>;
-  public executor?: Executor;
-  public subscriber?: Subscriber;
-  public batch?: boolean;
-  public batchingOptions?: EndpointBatchingOptions<K, V, C>;
   public endpoint?: Endpoint;
 
   public createProxyingResolver?: CreateProxyingResolverFn;
@@ -80,11 +66,6 @@ export class Subschema<K = any, V = any, C = K> {
   constructor(config: SubschemaConfig) {
     this.schema = config.schema;
 
-    this.rootValue = config.rootValue;
-    this.executor = config.executor;
-    this.subscriber = config.subscriber;
-    this.batch = config.batch;
-    this.batchingOptions = config.batchingOptions;
     this.endpoint = config.endpoint;
 
     this.createProxyingResolver = config.createProxyingResolver;

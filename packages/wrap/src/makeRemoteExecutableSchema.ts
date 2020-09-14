@@ -27,7 +27,7 @@ export function defaultCreateRemoteResolver(
 ): GraphQLFieldResolver<any, any> {
   return (_parent, _args, context, info) =>
     delegateToSchema({
-      schema: { schema: info.schema, executor, subscriber },
+      schema: { schema: info.schema, endpoint: { executor, subscriber } },
       context,
       info,
     });
